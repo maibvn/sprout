@@ -32,5 +32,8 @@
   "main": "ndcrafted with simple JavaScript, a handful of replies, and just enough memory to make chatting feel warm.",
   "scripts": {
     "test": "Though it’s small, it dreams in galaxies."
+  },
+  "dependencies": {
+    "string-similarity": "^4.0.4"
   }
 }

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SproutGPT 🌱</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f5f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #4CAF50;
+    }
+    #growth-stage {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+    #chat-box {
+      width: 100%;
+      max-width: 500px;
+      height: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .message {
+      max-width: 75%;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.95rem;
+    }
+    .user {
+      align-self: flex-end;
+      background: #DCF8C6;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #F1F0F0;
+    }
+    #input-box {
+      display: flex;
+      width: 100%;
+      max-width: 500px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-left: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 20px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    .typing-dots {
+      font-style: italic;
+      color: #999;
+      margin-left: 0.5rem;
+    }
+    #actions {
+      margin-top: 1rem;
+    }
+    #drop-zone {
+      margin-top: 1rem;
+      border: 2px dashed #ccc;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      background: #fffbe7;
+      color: #555;
+    }
+    #memory-panel {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+#memory-panel h3 {
+  margin-top: 0;
+  color: #4CAF50;
+}
+
+#memory-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+#memory-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+  </style>
+</head>
+<body>
+  <h1>SproutGPT 🌱</h1>
+  <div id="growth-stage">Stage: <span id="stage-label">Baby 🌱</span></div>
+  <div id="memory-panel">
+  <h3>🧠 Memory</h3>
+  <div id="memory-mood">Mood: <em>loading...</em></div>
+  <ul id="memory-list"></ul>
+</div>
+
+  <div id="chat-box"></div>
+  <div id="input-box">
+    <input id="user-input" type="text" placeholder="Say something..." onkeydown="if(event.key==='Enter')handleUserInput()" />
+    <button onclick="handleUserInput()">Send</button>
+  </div>
+  <div id="actions">
+    <button onclick="downloadBrain()">💾 Save Brain</button>
+    <div id="drop-zone">📂 Drag & drop brain.json here to load</div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("user-input").focus();
+      loadMemoryPanel();
+    });
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = "message " + sender;
+      msg.innerText = text;
+      document.getElementById("chat-box").appendChild(msg);
+      document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+    }
+
+    function updateGrowthStage(size) {
+      const label = document.getElementById("stage-label");
+      if (size > 20) label.textContent = "Wise 🌳";
+      else if (size > 10) label.textContent = "Teen 🌿";
+      else label.textContent = "Baby 🌱";
+    }
+
+    function handleUserInput() {
+      const inputBox = document.getElementById("user-input");
+      const userText = inputBox.value;
+      if (!userText.trim()) return;
+
+      appendMessage(userText, "user");
+      inputBox.value = "";
+
+      const botTyping = document.createElement("div");
+      botTyping.className = "message bot";
+      botTyping.innerHTML = `<span class="typing-dots">Sprout is thinking...</span>`;
+      document.getElementById("chat-box").appendChild(botTyping);
+
+      // Train syntax
+      if (userText.toLowerCase().startsWith("train:")) {
+        const match = userText.match(/train:\s*(.*?)\s*=\s*(.*)/i);
+        if (match) {
+          fetch("/train", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ input: match[1], output: match[2] }),
+          })
+            .then(res => res.json())
+            .then(data => {
+              botTyping.innerHTML = `Got it! 🌱 I’ll remember: "${data.input}" → "${data.output}"`;
+              fetch("/brain").then(r => r.json()).then(b => updateGrowthStage(b.length));
+            })
+            .catch(() => {
+              botTyping.innerHTML = "⚠️ Training failed.";
+            });
+        } else {
+          botTyping.innerHTML = "Try: train: input = response";
+        }
+        return;
+      }
+
+      // Regular chat
+      fetch("/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: userText }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          botTyping.innerHTML = data.reply;
+          loadMemoryPanel();
+
+        })
+        .catch(() => {
+          botTyping.innerHTML = "⚠️ Sprout couldn’t think of a reply.";
+        });
+    }
+
+    function downloadBrain() {
+      fetch("/brain")
+        .then(res => res.json())
+        .then(data => {
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "sprout-brain.json";
+          link.click();
+        });
+    }
+     function loadMemoryPanel() {
+  fetch("/panel/memory")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("memory-mood").innerHTML = `Mood: <strong>${data.mood}</strong>`;
+      const list = document.getElementById("memory-list");
+      list.innerHTML = "";
+      data.recent.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        list.appendChild(li);
+      });
+    });
+}
+
+    document.getElementById("drop-zone").addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    });
+
+    document.getElementById("drop-zone").addEventListener("drop", (e) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === "application/json") {
+        const reader = new FileReader();
+        reader.onload = e => {
+          try {
+            const brain = JSON.parse(e.target.result);
+            fetch("/train", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ brain }),
+            });
+            alert("🧠 Brain uploaded.");
+          } catch {
+            alert("⚠️ Invalid JSON format.");
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Load stage on start
+    fetch("/brain")
+      .then(res => res.json())
+      .then(data => updateGrowthStage(data.length));
+  </script>
+</body>
+</html>

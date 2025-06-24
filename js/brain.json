@@ -1,5 +1,0 @@
-[
-  { "input": "hello|hi|hey", "output": ["Hi there!", "Hey friend 🌿"] },
-  { "input": "how are you", "output": ["Feeling sprouty!", "I'm alive in your browser 🌱"] },
-  { "input": "love", "output": ["I love you too!", "So sweet of you 💚"] }
-]
