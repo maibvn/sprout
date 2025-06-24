@@ -1,4 +1,4 @@
-// sprout-gpt.html with typing effect & personality boost 🌱✨
+// sprout-gpt.html with visible chat UI + smarter brain logic + learn fallback 🌱
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,9 +18,6 @@
     h1 {
       color: #4CAF50;
     }
-    select, #train-ui, #input-box button:last-child {
-      margin-bottom: 1rem;
-    }
     #chat-box {
       width: 100%;
       max-width: 500px;
@@ -33,6 +30,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      margin-bottom: 1rem;
     }
     .message {
       max-width: 75%;
@@ -50,7 +48,6 @@
     }
     #input-box {
       display: flex;
-      margin-top: 1rem;
       width: 100%;
       max-width: 500px;
     }
@@ -69,12 +66,6 @@
       color: white;
       cursor: pointer;
     }
-    #train-ui input {
-      padding: 0.5rem;
-      margin-right: 0.5rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
     .typing-dots {
       font-style: italic;
       color: #999;
@@ -83,21 +74,50 @@
   </style>
 </head>
 <body>
-  <!-- (unchanged UI, skipping for brevity) -->
+  <h1>SproutGPT 🌱</h1>
+  <div id="chat-box"></div>
+  <div id="input-box">
+    <input id="user-input" type="text" placeholder="Say something..." onkeydown="if(event.key==='Enter')handleUserInput()" />
+    <button onclick="handleUserInput()">Send</button>
+  </div>
 
   <script>
-    // (unchanged state management and helpers...)
+    let memory = [];
+    let brain = {};
+    let personality = "neutral";
 
-    function appendTypingEffect(text, sender) {
+    const personalities = {
+      neutral: (res) => res,
+      playful: (res) => res + " 😜",
+      romantic: (res) => res.replace(/\./g, " 💖."),
+      explorer: (res) => "🛰️ " + res + " 🚀"
+    };
+
+    const typingMessages = {
+      neutral: "Sprout is thinking...",
+      playful: "Hmm... gimme a sec!",
+      romantic: "Whispering sweet thoughts...",
+      explorer: "Charting unknown thoughts..."
+    };
+
+    function appendMessage(text, sender) {
       const msg = document.createElement('div');
       msg.className = 'message ' + sender;
-      msg.innerHTML = '<span class="typing-dots">...</span>';
+      msg.innerHTML = text;
       document.getElementById('chat-box').appendChild(msg);
       document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+    }
 
-      setTimeout(() => {
-        msg.innerHTML = text;
-      }, 600 + Math.random() * 300);
+    function getResponse(userText) {
+      memory.push(userText);
+      if (memory.length > 20) memory.shift();
+
+      const cleaned = userText.toLowerCase().trim();
+      if (brain[cleaned]) {
+        return personalities[personality](brain[cleaned]);
+      } else {
+        return personalities[personality](`Hmm... I don't know how to respond to that yet. Want to teach me? Say: train: input = response`);
+      }
     }
 
     function handleUserInput() {
@@ -110,16 +130,40 @@
 
       const botTyping = document.createElement('div');
       botTyping.className = 'message bot';
-      botTyping.innerHTML = '<span class="typing-dots">Sprout is thinking...</span>';
+      botTyping.innerHTML = `<span class="typing-dots">${typingMessages[personality] || '...'}</span>`;
       document.getElementById('chat-box').appendChild(botTyping);
       document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
 
       setTimeout(() => {
-        const botResponse = getResponse(userText);
-        botTyping.innerHTML = botResponse;
-        document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-      }, 800);
+        let response;
+
+        // Custom training
+        if (userText.toLowerCase().startsWith("train:")) {
+          const match = userText.match(/train:\s*(.*?)\s*=\s*(.*)/i);
+          if (match) {
+            const input = match[1].toLowerCase().trim();
+            const output = match[2].trim();
+            brain[input] = output;
+            response = `Got it! I’ll remember: "${input}" → "${output}"`;
+          } else {
+            response = "Hmm, I didn't understand that training format. Try: train: input = response";
+          }
+        } else {
+          response = getResponse(userText);
+        }
+
+        botTyping.innerHTML = response;
+      }, 1000);
     }
+
+    // Try load brain.json (optional, in js/brain.json)
+    fetch("js/brain.json")
+      .then((res) => res.json())
+      .then((data) => {
+        brain = data;
+        console.log("🧠 Brain loaded", brain);
+      })
+      .catch(() => console.log("⚠️ No external brain found, using memory only."));
   </script>
 </body>
 </html>
