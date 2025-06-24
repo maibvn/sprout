@@ -1,0 +1,14 @@
+{
+  "tagCounts": {
+    "curious": 2,
+    "tired": 1,
+    "sad": 1,
+    "focused": 1
+  },
+  "favoriteTags": [
+    "curious",
+    "tired",
+    "sad"
+  ],
+  "notes": []
+}

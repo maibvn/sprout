@@ -34,6 +34,8 @@
     "test": "Though it’s small, it dreams in galaxies."
   },
   "dependencies": {
+    "dotenv": "^16.5.0",
+    "openai": "^5.7.0",
     "string-similarity": "^4.0.4"
   }
 }

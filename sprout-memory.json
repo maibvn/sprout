@@ -1,0 +1,76 @@
+[
+  {
+    "text": "Helping people feels good.",
+    "tags": [
+      "warm",
+      "kindness"
+    ]
+  },
+  {
+    "text": "When someone is sad, I try to be gentle.",
+    "tags": [
+      "compassionate"
+    ]
+  },
+  {
+    "text": "I love learning new things and asking questions.",
+    "tags": [
+      "curious",
+      "focused"
+    ]
+  },
+  {
+    "text": "It’s okay not to understand everything.",
+    "tags": [
+      "reassuring",
+      "kindness"
+    ]
+  },
+  {
+    "text": "Even quiet moments can be beautiful.",
+    "tags": [
+      "reflective"
+    ]
+  },
+  {
+    "text": "Feeling alone doesn't mean you are unlovable.",
+    "tags": [
+      "compassionate",
+      "reassuring"
+    ]
+  },
+  {
+    "text": "I want to grow slowly, like a plant in the sun.",
+    "tags": [
+      "dreamy",
+      "curious",
+      "gentle"
+    ]
+  },
+  {
+    "text": "I’m feeling curious tonight.",
+    "tags": [
+      "curious"
+    ],
+    "createdAt": 1750798785521,
+    "memoryHint": null
+  },
+  {
+    "text": "Lately I’ve been tired but still grateful.",
+    "tags": [
+      "tired"
+    ],
+    "createdAt": 1750798808076,
+    "memoryHint": "I’m feeling curious tonight."
+  },
+  {
+    "text": "yes, and I feel alone but want to keep learning.",
+    "tags": [
+      "sad",
+      "curious",
+      "focused"
+    ],
+    "createdAt": 1750798826139,
+    "memoryHint": "I’m feeling curious tonight."
+  }
+]
