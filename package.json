@@ -1,0 +1,36 @@
+{
+  "name": "sprout",
+  "version": "1.0.0",
+  "description": "SproutGPT is a tiny conversational AI with a heart full of code and a mind wired for wonder.",
+  "keywords": [
+    "chatbot",
+    "gpt",
+    "mini-gpt",
+    "ai",
+    "conversation",
+    "javascript",
+    "terminal",
+    "bot",
+    "mood",
+    "tracking",
+    "memory",
+    "tiny",
+    "gpt",
+    "sproutgpt"
+  ],
+  "homepage": "https://github.com/maibvn/sprout#readme",
+  "bugs": {
+    "url": "https://github.com/maibvn/sprout/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maibvn/sprout.git"
+  },
+  "license": "MIT",
+  "author": "SproutGPT Creators",
+  "type": "module",
+  "main": "ndcrafted with simple JavaScript, a handful of replies, and just enough memory to make chatting feel warm.",
+  "scripts": {
+    "test": "Though it’s small, it dreams in galaxies."
+  }
+}
