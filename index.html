@@ -1,4 +1,4 @@
-// sprout-gpt.html updated with delete memory button and brain export
+// sprout-gpt.html with Live Train Me Mode 🌱
 
 <!DOCTYPE html>
 <html lang="en">
@@ -78,7 +78,7 @@
   </style>
 </head>
 <body>
-  <h1>SproutGPT 🌱</h1>
+  <h1>SproutGPT 🌱 <span id="growth-stage">(Baby)</span></h1>
   <select id="personality" onchange="changePersonality()">
     <option value="neutral">Neutral</option>
     <option value="playful">Playful</option>
@@ -92,6 +92,8 @@
     <button onclick="trainBot()">Train</button>
     <button onclick="exportBrain()">⬇ Export Brain</button>
     <button onclick="clearMemory()">🧹 Clear Memory</button>
+    <button onclick="editMemory()">✏️ Edit Memory</button>
+    <input type="file" id="brain-loader" onchange="loadExternalBrain(event)" />
   </div>
 
   <div id="chat-box"></div>
@@ -117,12 +119,22 @@
     let learned = JSON.parse(localStorage.getItem('sprout-learned') || "[]");
 
     document.getElementById('personality').value = personality;
+    updateGrowthStage();
 
     function saveState() {
       localStorage.setItem('sprout-memory', JSON.stringify(memory));
       localStorage.setItem('sprout-mood', mood);
       localStorage.setItem('sprout-personality', personality);
       localStorage.setItem('sprout-learned', JSON.stringify(learned));
+      updateGrowthStage();
+    }
+
+    function updateGrowthStage() {
+      const size = learned.length;
+      let stage = "Baby";
+      if (size > 5) stage = "Teen";
+      if (size > 15) stage = "Wise";
+      document.getElementById("growth-stage").innerText = `(${stage})`;
     }
 
     function changePersonality() {
@@ -137,6 +149,22 @@
       } catch (e) {
         console.error("Could not load brain.json", e);
       }
+    }
+
+    function loadExternalBrain(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          brain = data;
+          alert("🧠 New brain loaded!");
+        } catch (e) {
+          alert("❌ Invalid brain file");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function trainBot() {
@@ -168,6 +196,20 @@
       alert("Sprout’s memory and learned replies were cleared 🌬️");
     }
 
+    function editMemory() {
+      const lines = learned.map((e, i) => `${i}: "${e.input}" → "${e.output.join(', ')}"`).join('\n');
+      const index = prompt("Which memory to edit? (index)\n" + lines);
+      if (index !== null && learned[index]) {
+        const newInput = prompt("Edit user says:", learned[index].input);
+        const newOutput = prompt("Edit reply:", learned[index].output[0]);
+        if (newInput && newOutput) {
+          learned[index] = { input: newInput, output: [newOutput] };
+          saveState();
+          alert("Memory updated 🌟");
+        }
+      }
+    }
+
     function getResponse(userInput) {
       memory.push(userInput);
 
@@ -185,6 +227,17 @@
           response = personalities[personality](response);
           saveState();
           return response;
+        }
+      }
+
+      // Live Training Prompt
+      const wantsToTeach = confirm("Sprout doesn't know how to respond to that yet. Want to teach it now?");
+      if (wantsToTeach) {
+        const reply = prompt("What should Sprout say when someone says:\n" + userInput);
+        if (reply) {
+          learned.push({ input: userInput, output: [reply] });
+          saveState();
+          return personalities[personality](reply);
         }
       }
 
