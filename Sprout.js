@@ -1,8 +1,15 @@
-// sprout-gpt.js
+const fs = require("fs");
+const readline = require("readline");
 
-// Simple browser version of SproutGPT using prompt + alert
+// Load memory if exists
+let memory = fs.existsSync("memory.json")
+  ? JSON.parse(fs.readFileSync("memory.json"))
+  : {
+      history: [],
+      mood: "neutral",
+    };
 
-// Step 1: Hardcoded conversation patterns
+// Brain patterns
 const brain = [
   {
     input: /hello|hi|hey/i,
@@ -17,10 +24,7 @@ const brain = [
   },
   {
     input: /who (are|r) you/i,
-    output: [
-      "I'm SproutGPT! A tiny chat buddy.",
-      "Just a friendly bit of code.",
-    ],
+    output: ["I'm a tiny GPT-style bot!", "Just a friendly piece of code."],
   },
   {
     input: /what.*(can|do)/i,
@@ -39,45 +43,58 @@ const brain = [
   },
 ];
 
-let mood = "neutral";
-let memory = [];
+function saveMemory() {
+  fs.writeFileSync("memory.json", JSON.stringify(memory, null, 2));
+}
 
 function getResponse(userInput) {
-  memory.push(userInput);
+  memory.history.push(userInput);
 
-  if (/thank|love|cool|nice/i.test(userInput)) mood = "happy";
-  else if (/bad|hate|stupid/i.test(userInput)) mood = "grumpy";
+  if (/thank|love|cool|nice/i.test(userInput)) memory.mood = "happy";
+  else if (/bad|hate|stupid/i.test(userInput)) memory.mood = "grumpy";
 
   for (const pattern of brain) {
     if (pattern.input.test(userInput)) {
       const replies = pattern.output;
       let response = replies[Math.floor(Math.random() * replies.length)];
 
-      if (mood === "happy") response += " 😊";
-      if (mood === "grumpy") response += " 😤";
+      if (memory.mood === "happy") response += " 😊";
+      if (memory.mood === "grumpy") response += " 😤";
 
+      saveMemory(); // Save after every response
       return response;
     }
   }
 
+  saveMemory();
   return "Hmm... that's interesting. Tell me more!";
 }
 
-// Simple browser loop
-function startChat() {
-  alert("🤖 Hi! I'm SproutGPT. Let's chat.");
-  let keepChatting = true;
+// CLI chat
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-  while (keepChatting) {
-    const userInput = prompt("You:");
-    if (!userInput || /bye|exit|quit/i.test(userInput)) {
-      alert("👋 Bye for now!");
-      keepChatting = false;
-    } else {
-      const botResponse = getResponse(userInput);
-      alert("Bot: " + botResponse);
-    }
-  }
+console.log("🤖 SproutGPT is here. Your tiny talking buddy is listening...");
+
+function ask() {
+  rl.question("You: ", (input) => {
+    const response = getResponse(input);
+
+    let i = 0;
+    process.stdout.write("Bot: ");
+    const interval = setInterval(() => {
+      if (i < response.length) {
+        process.stdout.write(response[i]);
+        i++;
+      } else {
+        clearInterval(interval);
+        process.stdout.write("\n");
+        ask();
+      }
+    }, 30);
+  });
 }
 
-startChat();
+ask();

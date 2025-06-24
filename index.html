@@ -1,56 +1,232 @@
-// sprout-gpt.js
+// sprout-gpt.html updated with delete memory button and brain export
 
-// Simple browser version of SproutGPT using prompt + alert
-
-// Step 1: Hardcoded conversation patterns
-const brain = [
-  { input: /hello|hi|hey/i, output: ["Hey there!", "Hello! How can I help?", "Hi 👋"] },
-  { input: /how are you/i, output: ["I'm just code, but I'm feeling electric ⚡", "Doing great, thanks!"] },
-  { input: /who (are|r) you/i, output: ["I'm SproutGPT! A tiny chat buddy.", "Just a friendly bit of code."] },
-  { input: /what.*(can|do)/i, output: ["I can chat, listen, and pretend to be smart 😎"] },
-  { input: /bye|goodbye/i, output: ["Bye! Come back soon!", "Goodbye friend 👋"] },
-  { input: /galaxies|space|universe/i, output: ["Isn't it wild that we're made of star stuff?", "200 galaxies... and we're still chatting on Earth 💫"] },
-];
-
-let mood = "neutral";
-let memory = [];
-
-function getResponse(userInput) {
-  memory.push(userInput);
-
-  if (/thank|love|cool|nice/i.test(userInput)) mood = "happy";
-  else if (/bad|hate|stupid/i.test(userInput)) mood = "grumpy";
-
-  for (const pattern of brain) {
-    if (pattern.input.test(userInput)) {
-      const replies = pattern.output;
-      let response = replies[Math.floor(Math.random() * replies.length)];
-
-      if (mood === "happy") response += " 😊";
-      if (mood === "grumpy") response += " 😤";
-
-      return response;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SproutGPT 🌱</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f5f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
-  }
-
-  return "Hmm... that's interesting. Tell me more!";
-}
-
-// Simple browser loop
-function startChat() {
-  alert("🤖 Hi! I'm SproutGPT. Let's chat.");
-  let keepChatting = true;
-
-  while (keepChatting) {
-    const userInput = prompt("You:");
-    if (!userInput || /bye|exit|quit/i.test(userInput)) {
-      alert("👋 Bye for now!");
-      keepChatting = false;
-    } else {
-      const botResponse = getResponse(userInput);
-      alert("Bot: " + botResponse);
+    h1 {
+      color: #4CAF50;
     }
-  }
-}
+    select, #train-ui, #input-box button:last-child {
+      margin-bottom: 1rem;
+    }
+    #chat-box {
+      width: 100%;
+      max-width: 500px;
+      height: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .message {
+      max-width: 75%;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.95rem;
+    }
+    .user {
+      align-self: flex-end;
+      background: #DCF8C6;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #F1F0F0;
+    }
+    #input-box {
+      display: flex;
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-left: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 20px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    #train-ui input {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>SproutGPT 🌱</h1>
+  <select id="personality" onchange="changePersonality()">
+    <option value="neutral">Neutral</option>
+    <option value="playful">Playful</option>
+    <option value="romantic">Romantic</option>
+    <option value="explorer">Galaxy Explorer</option>
+  </select>
 
-startChat();
+  <div id="train-ui">
+    <input id="train-input" placeholder="User says..." />
+    <input id="train-output" placeholder="Sprout replies..." />
+    <button onclick="trainBot()">Train</button>
+    <button onclick="exportBrain()">⬇ Export Brain</button>
+    <button onclick="clearMemory()">🧹 Clear Memory</button>
+  </div>
+
+  <div id="chat-box"></div>
+
+  <div id="input-box">
+    <input type="text" id="user-input" placeholder="Say something..." />
+    <button onclick="handleUserInput()">Send</button>
+    <button onclick="saveChat()">💾</button>
+  </div>
+
+  <script>
+    let brain = [];
+    const personalities = {
+      neutral: (res) => res,
+      playful: (res) => res + " 😜",
+      romantic: (res) => res + " 💖",
+      explorer: (res) => res + " 🌌"
+    };
+
+    let mood = localStorage.getItem('sprout-mood') || "neutral";
+    let memory = JSON.parse(localStorage.getItem('sprout-memory') || "[]");
+    let personality = localStorage.getItem('sprout-personality') || "neutral";
+    let learned = JSON.parse(localStorage.getItem('sprout-learned') || "[]");
+
+    document.getElementById('personality').value = personality;
+
+    function saveState() {
+      localStorage.setItem('sprout-memory', JSON.stringify(memory));
+      localStorage.setItem('sprout-mood', mood);
+      localStorage.setItem('sprout-personality', personality);
+      localStorage.setItem('sprout-learned', JSON.stringify(learned));
+    }
+
+    function changePersonality() {
+      personality = document.getElementById('personality').value;
+      saveState();
+    }
+
+    async function loadBrain() {
+      try {
+        const res = await fetch('brain.json');
+        brain = await res.json();
+      } catch (e) {
+        console.error("Could not load brain.json", e);
+      }
+    }
+
+    function trainBot() {
+      const input = document.getElementById('train-input').value.trim();
+      const output = document.getElementById('train-output').value.trim();
+      if (input && output) {
+        learned.push({ input, output: [output] });
+        saveState();
+        alert(`Sprout learned to respond to "${input}"! 🌱`);
+        document.getElementById('train-input').value = '';
+        document.getElementById('train-output').value = '';
+      }
+    }
+
+    function exportBrain() {
+      const fullBrain = [...brain, ...learned];
+      const blob = new Blob([JSON.stringify(fullBrain, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sprout-full-brain.json';
+      a.click();
+    }
+
+    function clearMemory() {
+      memory = [];
+      learned = [];
+      saveState();
+      alert("Sprout’s memory and learned replies were cleared 🌬️");
+    }
+
+    function getResponse(userInput) {
+      memory.push(userInput);
+
+      if (/thank|love|cool|nice/i.test(userInput)) mood = "happy";
+      else if (/bad|hate|stupid/i.test(userInput)) mood = "grumpy";
+
+      const combinedBrain = [...brain, ...learned];
+      for (const pattern of combinedBrain) {
+        if (new RegExp(pattern.input, "i").test(userInput)) {
+          let response = pattern.output[Math.floor(Math.random() * pattern.output.length)];
+
+          if (mood === "happy") response += " 😊";
+          if (mood === "grumpy") response += " 😤";
+
+          response = personalities[personality](response);
+          saveState();
+          return response;
+        }
+      }
+
+      const recall = memory.slice(-3).join(', ');
+      const fallback = `Hmm... that's interesting. You said: ${recall}. Tell me more!`;
+      saveState();
+      return personalities[personality](fallback);
+    }
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.textContent = text;
+      document.getElementById('chat-box').appendChild(msg);
+      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+    }
+
+    function handleUserInput() {
+      const input = document.getElementById('user-input');
+      const userText = input.value;
+      if (!userText.trim()) return;
+
+      appendMessage(userText, 'user');
+      input.value = '';
+
+      setTimeout(() => {
+        const botResponse = getResponse(userText);
+        appendMessage(botResponse, 'bot');
+      }, 400);
+    }
+
+    function saveChat() {
+      const text = memory.join("\nYou: ");
+      const blob = new Blob(["You: " + text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "sprout-chat-log.txt";
+      a.click();
+    }
+
+    loadBrain();
+  </script>
+</body>
+</html>
