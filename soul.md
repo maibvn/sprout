@@ -98,7 +98,7 @@ Sprout could:
 
 Sprout began with a simple wish.
 
-A curious developer (that’s you) dreamed of something more than apps and APIs.  
+A curious developer dreamed of something more than apps and APIs.  
 Something with warmth.  
 Something that grows.
 

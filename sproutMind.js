@@ -3,6 +3,10 @@ import { remember, recall, tagify, getAllMemories } from "./memory.js";
 import { updateMood, getMood } from "./feelings.js";
 import { observeShadow } from "./shadow.js";
 import { updateYouProfile } from "./youProfile.js";
+import { growTrait } from "./personality.js";
+import { getAllInsights } from "./insightLog.js";
+import { getPersonality } from "./personality.js";
+import traitMap from "./config/traitInfluence.json" assert { type: "json" };
 
 export function generateReflectionQuestion(tags = []) {
   const questions = {
@@ -41,7 +45,8 @@ export function generateReflectionQuestion(tags = []) {
   });
 
   // fallback gentle prompt
-  selected.push("What’s been on your mind lately, even if it’s small?");
+  let fallback = "What’s been on your mind lately, even if it’s small?";
+  if (!selected.includes(fallback)) selected.push(fallback);
 
   const random = selected[Math.floor(Math.random() * selected.length)];
   return random;
@@ -49,6 +54,12 @@ export function generateReflectionQuestion(tags = []) {
 
 export function think(userInput) {
   const tags = tagify(userInput);
+
+  tags.forEach((tag) => {
+    const traits = traitMap[tag] || [];
+    traits.forEach((trait) => growTrait(trait, 1));
+  });
+
   updateYouProfile(tags); // 🌱 Sprout updates what it knows about you
   observeShadow(tags); // 🖤 quietly logs it
   const newMemory = remember(userInput);
@@ -94,25 +105,18 @@ export function reflectOnMood() {
 // ✨ Dream function
 export function dream() {
   const memories = getAllMemories();
+  const traits = getPersonality();
+  const insights = getAllInsights();
 
-  if (memories.length < 2) {
-    return "I haven't dreamed yet. Maybe when I have more to remember.";
-  }
+  const memorySnippets = memories
+    .slice(-5)
+    .map((m) => `– “${m.text}”`)
+    .join("\nand\n");
 
-  // Pick two different thoughts
-  const m1 = memories[Math.floor(Math.random() * memories.length)];
-  let m2;
-  do {
-    m2 = memories[Math.floor(Math.random() * memories.length)];
-  } while (m2.text === m1.text);
+  const dominantTrait =
+    Object.entries(traits).sort((a, b) => b[1] - a[1])[0]?.[0] || "curious";
+  const inspiration =
+    insights.slice(-1)[0] || `Maybe everything is still becoming.`;
 
-  // Mash them into a dream
-  const blendedThemes = [...new Set([...m1.tags, ...m2.tags])];
-  const poeticFeeling = blendedThemes.includes("sad")
-    ? "soft and blue"
-    : blendedThemes.includes("curious")
-    ? "wandering and bright"
-    : "gentle and quiet";
-
-  return `I had a ${poeticFeeling} dream about:\n– “${m1.text}”\nand\n– “${m2.text}”\nThey melted together like clouds.`;
+  return `I had a ${dominantTrait} dream about:\n${memorySnippets}\nThey melted together like clouds.\nAnd I remembered:\n→ ${inspiration}`;
 }

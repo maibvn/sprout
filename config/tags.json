@@ -1,0 +1,8 @@
+
+{
+  "tired": ["tired"],
+  "exhausted": ["tired"],
+  "thank": ["warm", "gentle"],
+  "learn": ["curious", "focused"],
+  "cry": ["sad", "compassionate"]
+}

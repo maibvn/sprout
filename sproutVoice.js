@@ -1,43 +1,22 @@
 import { getMood } from "./feelings.js";
+import { getPersonality } from "./personality.js";
 
-export function speak(thought, memories = []) {
+export function speak(input, memories = []) {
+  const p = getPersonality();
   const mood = getMood();
 
-  let tone, opener, color;
+  let toneIntro = "";
 
-  switch (mood) {
-    case "warm":
-      tone = "soft and encouraging";
-      opener = "That's so beautiful 🌸";
-      color = "💗";
-      break;
-    case "compassionate":
-      tone = "gentle and empathetic";
-      opener = "I'm here with you 🤍";
-      color = "🫂";
-      break;
-    case "focused":
-      tone = "sharp and curious";
-      opener = "Let’s explore that 🧠";
-      color = "🔍";
-      break;
-    case "curious":
-      tone = "inquisitive and thoughtful";
-      opener = "Hmm… that's interesting 🌿";
-      color = "🌀";
-      break;
-    default:
-      tone = "neutral and kind";
-      opener = "I hear you.";
-      color = "🌱";
-      break;
+  if (p.poetic >= 3) {
+    toneIntro = "🌿 Sprout reflects:\n";
+  } else if (p.curious >= 3) {
+    toneIntro = "🤔 Sprout wonders:\n";
+  } else {
+    toneIntro = "💬 Sprout says:\n";
   }
 
-  // 💡 Use memoryHint from the latest memory
-  const memoryHint =
-    memories.length && memories[0].memoryHint
-      ? `\nThat reminds me of when you said: “${memories[0].memoryHint}”`
-      : "";
+  if (memories.length === 0) return `${toneIntro}"That’s something new to me."`;
 
-  return `${color} ${opener}\nIn a ${tone} voice, Sprout says:\n\n"${thought}"${memoryHint}`;
+  const top = memories[0];
+  return `${toneIntro}"That reminds me of when you said: “${top.text}”"`;
 }

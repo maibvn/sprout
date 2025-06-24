@@ -1,0 +1,37 @@
+[
+  {
+    "text": "I want to grow slowly, like a plant in the sun.",
+    "tags": [
+      "dreamy",
+      "curious",
+      "gentle"
+    ],
+    "createdAt": 1750800105614,
+    "memoryHint": "Desire for slow, natural growth"
+  },
+  {
+    "text": "hi, im tired",
+    "tags": [
+      "tired"
+    ],
+    "createdAt": 1750802617771,
+    "memoryHint": "I want to grow slowly, like a plant in the sun."
+  },
+  {
+    "text": "I feel like learning is silence blooming.",
+    "tags": [
+      "curious",
+      "focused"
+    ],
+    "createdAt": 1750802661333,
+    "memoryHint": "hi, im tired"
+  },
+  {
+    "text": "“Lately, I cry and I grow.",
+    "tags": [
+      "compassionate"
+    ],
+    "createdAt": 1750802672120,
+    "memoryHint": "I feel like learning is silence blooming."
+  }
+]

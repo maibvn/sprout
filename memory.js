@@ -1,4 +1,5 @@
 import { seedMemories } from "./seedMemories.js";
+import tagDict from "./config/tags.json" assert { type: "json" };
 import fs from "fs";
 
 let memoryStore = [...seedMemories];
@@ -7,17 +8,14 @@ export function tagify(text) {
   const lowered = text.toLowerCase();
   const tags = [];
 
-  if (lowered.includes("alone") || lowered.includes("lonely")) tags.push("sad");
-  if (lowered.includes("love") || lowered.includes("thank")) tags.push("warm");
-  if (lowered.includes("code") || lowered.includes("learn"))
-    tags.push("curious", "focused");
-  if (lowered.includes("tired")) tags.push("tired");
-  if (lowered.includes("cry") || lowered.includes("pain"))
-    tags.push("compassionate");
+  Object.entries(tagDict).forEach(([keyword, tagList]) => {
+    if (lowered.includes(keyword)) {
+      tags.push(...tagList);
+    }
+  });
 
   if (tags.length === 0) tags.push("curious");
-
-  return tags;
+  return [...new Set(tags)];
 }
 
 export function remember(text) {
