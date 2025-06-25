@@ -1,17 +1,25 @@
 // personality.js
 import fs from "fs";
+import { PERSONALITY_FILE } from "./paths.js";
 
-const FILE = "sprout-personality.json";
+// 🌱 Try loading from file, or fall back to a gentle default
+let personality;
 
-let personality = {
-  traits: {
-    curious: 3,
-    gentle: 2,
-    poetic: 3,
-    anxious: 1,
-    quiet: 2,
-  },
-};
+if (fs.existsSync(PERSONALITY_FILE)) {
+  personality = JSON.parse(fs.readFileSync(PERSONALITY_FILE, "utf-8"));
+} else {
+  personality = {
+    traits: {
+      curious: 3,
+      gentle: 2,
+      poetic: 3,
+      anxious: 1,
+      quiet: 2,
+    },
+  };
+  // Save the default to disk so Sprout starts with a soul
+  fs.writeFileSync(PERSONALITY_FILE, JSON.stringify(personality, null, 2));
+}
 
 export function getPersonality() {
   return personality.traits;
@@ -37,5 +45,5 @@ export function growTrait(trait, amount = 1) {
 }
 
 function savePersonality() {
-  fs.writeFileSync(FILE, JSON.stringify(personality, null, 2));
+  fs.writeFileSync(PERSONALITY_FILE, JSON.stringify(personality, null, 2));
 }

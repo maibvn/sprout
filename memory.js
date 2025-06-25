@@ -1,6 +1,9 @@
 import { seedMemories } from "./seedMemories.js";
-import tagDict from "./config/tags.json" assert { type: "json" };
 import fs from "fs";
+import { TAGS_FILE } from "./paths.js";
+import { MEMORY_FILE } from "./paths.js";
+
+const tagDict = JSON.parse(fs.readFileSync(TAGS_FILE, "utf-8"));
 
 let memoryStore = [...seedMemories];
 
@@ -58,7 +61,7 @@ export function recall(inputText) {
 }
 
 function saveMemory() {
-  fs.writeFileSync("sprout-memory.json", JSON.stringify(memoryStore, null, 2));
+  fs.writeFileSync(MEMORY_FILE, JSON.stringify(memoryStore, null, 2));
 }
 
 export function getAllMemories() {

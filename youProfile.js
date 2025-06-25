@@ -1,7 +1,7 @@
 // youProfile.js
 import fs from "fs";
 
-const PROFILE_PATH = "you-profile.json";
+import { YOU_PROFILE_FILE } from "./paths.js";
 
 let profile = {
   tagCounts: {},
@@ -30,5 +30,5 @@ export function getYouSummary() {
 }
 
 function saveProfile() {
-  fs.writeFileSync(PROFILE_PATH, JSON.stringify(profile, null, 2));
+  fs.writeFileSync(YOU_PROFILE_FILE, JSON.stringify(profile, null, 2));
 }

@@ -1,4 +1,6 @@
 // sproutMind.js
+import fs from "fs";
+
 import { remember, recall, tagify, getAllMemories } from "./memory.js";
 import { updateMood, getMood } from "./feelings.js";
 import { observeShadow } from "./shadow.js";
@@ -6,7 +8,9 @@ import { updateYouProfile } from "./youProfile.js";
 import { growTrait } from "./personality.js";
 import { getAllInsights } from "./insightLog.js";
 import { getPersonality } from "./personality.js";
-import traitMap from "./config/traitInfluence.json" assert { type: "json" };
+import { TRAIT_INFLUENCE_FILE } from "./paths.js";
+
+const traitMap = JSON.parse(fs.readFileSync(TRAIT_INFLUENCE_FILE, "utf-8"));
 
 export function generateReflectionQuestion(tags = []) {
   const questions = {

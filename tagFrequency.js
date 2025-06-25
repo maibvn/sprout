@@ -1,8 +1,7 @@
 // tagFrequency.js
 import fs from "fs";
 import { getAllMemories } from "./memory.js";
-
-const FILE = "tag-frequency.json";
+import { TAG_FREQUENCY_FILE } from "./paths.js";
 
 export function calculateTagFrequency() {
   const memories = getAllMemories();
@@ -15,7 +14,7 @@ export function calculateTagFrequency() {
     });
   });
 
-  fs.writeFileSync(FILE, JSON.stringify(tagCounts, null, 2));
+  fs.writeFileSync(TAG_FREQUENCY_FILE, JSON.stringify(tagCounts, null, 2));
   return tagCounts;
 }
 
